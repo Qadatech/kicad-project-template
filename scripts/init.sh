@@ -47,10 +47,11 @@ while IFS= read -r -d '' f; do
   echo "  edited  ${f#./}"
 done < <(find . -type f -not -path './.git/*' -print0)
 
-# 2. Drop the template-only section from the README.
-if [[ -f README.md ]]; then
-  perl -0pi -e 's/<!-- template:start -->.*?<!-- template:end -->\n*//s' README.md
-fi
+# 2. Drop the template-only section from the READMEs.
+for readme in README*.md; do
+  [[ -f "$readme" ]] || continue
+  perl -0pi -e 's/<!-- template:start -->.*?<!-- template:end -->\n*//s' "$readme"
+done
 
 # 3. Rename files and directories (deepest first so parents move last).
 while IFS= read -r -d '' p; do

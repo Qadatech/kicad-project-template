@@ -1,70 +1,72 @@
 # PROJECT_NAME
 
+**English** | [Bahasa Indonesia](README.id.md)
+
 KiCad 10 hardware project.
 
 <!-- template:start -->
-## Menggunakan template ini
+## Using this template
 
-1. Klik **Use this template → Create a new repository** di GitHub. Nama repository
-   akan menjadi nama project KiCad (mis. `sensor-board`).
-2. Workflow **Template init** berjalan otomatis pada push pertama:
-   - `PROJECT_NAME` diganti dengan nama repository, di nama file maupun isi file
-     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, dst.)
-   - UUID root schematic di-generate ulang
-   - bagian README ini dihapus, lalu hasilnya di-commit oleh `github-actions[bot]`
-   - workflow **KiCad CI** dijalankan untuk project yang sudah di-rename
-3. `git pull`, lalu buka file `.kicad_pro` di KiCad.
+1. Click **Use this template → Create a new repository** on GitHub. The repository name
+   becomes the KiCad project name (e.g. `sensor-board`).
+2. The **Template init** workflow runs automatically on the first push:
+   - `PROJECT_NAME` is replaced with the repository name in both file names and file contents
+     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, etc.)
+   - the root schematic UUID is regenerated
+   - this section is removed from both READMEs and the result is committed by `github-actions[bot]`
+   - the **KiCad CI** workflow is triggered for the renamed project
+3. `git pull`, then open the `.kicad_pro` file in KiCad.
 
-Clone lokal tanpa GitHub? Jalankan sendiri:
+Cloned locally without GitHub? Run it yourself:
 
 ```bash
-scripts/init.sh nama-project   # tanpa argumen: pakai nama folder repository
+scripts/init.sh my-project   # no argument: uses the repository folder name
 ```
 
-> Jika push dari workflow ditolak, buka **Settings → Actions → General → Workflow permissions**
-> dan pilih **Read and write permissions**, lalu jalankan ulang workflow *Template init*
-> (tab Actions → Template init → Run workflow).
+> If the workflow's push is rejected, go to **Settings → Actions → General → Workflow permissions**,
+> select **Read and write permissions**, then re-run the *Template init* workflow
+> (Actions tab → Template init → Run workflow).
 
-Setelah inisialisasi, `scripts/init.sh` dan `.github/workflows/template-init.yml` tidak
-melakukan apa-apa lagi dan boleh dihapus.
+After initialisation, `scripts/init.sh` and `.github/workflows/template-init.yml` no longer
+do anything and can be deleted.
 <!-- template:end -->
 
-## Struktur
+## Layout
 
 ```
 sources/PROJECT_NAME/        KiCad project (.kicad_pro/.kicad_sch/.kicad_pcb) + lib tables
 libraries/
-  PROJECT_NAME.kicad_sym     simbol khusus project
-  PROJECT_NAME.pretty/       footprint khusus project
-  PROJECT_NAME.3dshapes/     model 3D (STEP/WRL)
-.github/workflows/kicad.yml  ERC, DRC, dan output fabrikasi
+  PROJECT_NAME.kicad_sym     project-specific symbols
+  PROJECT_NAME.pretty/       project-specific footprints
+  PROJECT_NAME.3dshapes/     3D models (STEP/WRL)
+.github/workflows/kicad.yml  ERC, DRC and fabrication outputs
 ```
 
-Library project sudah terdaftar di `sym-lib-table` / `fp-lib-table` project dengan path
-`${KIPRJMOD}/../../libraries/...`, jadi tetap jalan setelah di-clone di mana pun.
-Untuk model 3D, isi path footprint dengan `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step`.
+The project libraries are registered in the project's `sym-lib-table` / `fp-lib-table` using
+`${KIPRJMOD}/../../libraries/...`, so they keep working wherever the repository is cloned.
+For 3D models, set the footprint model path to `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step`.
 
-Title block memakai text variable `${PROJECT}`, `${REVISION}` dan `${CURRENT_DATE}`.
-`REVISION` bernilai `dev` di KiCad dan diisi otomatis oleh CI dari tag git / commit.
+The title block uses the text variables `${PROJECT}`, `${REVISION}` and `${CURRENT_DATE}`.
+`REVISION` is `dev` inside KiCad and is filled in by CI from the git tag / commit.
 
-## CI & rilis
+## CI & releases
 
-Setiap push / pull request menjalankan [`kicad.yml`](.github/workflows/kicad.yml) di
-container `kicad/kicad:10.0`:
+Every push / pull request runs [`kicad.yml`](.github/workflows/kicad.yml) in the
+`kicad/kicad:10.0` container:
 
-| Langkah | Output |
+| Step | Output |
 | --- | --- |
-| ERC, DRC (+ schematic parity) | `reports/erc.rpt`, `reports/drc.rpt` — job gagal jika ada error |
+| ERC, DRC (+ schematic parity) | `reports/erc.rpt`, `reports/drc.rpt` — the job fails on errors |
 | Schematic | `PROJECT_NAME-schematic.pdf`, `PROJECT_NAME-bom.csv` |
 | PCB | `gerbers/` + `PROJECT_NAME-gerbers.zip`, drill + drill map, `PROJECT_NAME-pos.csv`, `PROJECT_NAME-pcb.pdf`, `PROJECT_NAME.step` |
 
-Output bisa diunduh dari tab **Actions** (artifact). Layer Gerber mengikuti pengaturan
-**File → Plot** yang tersimpan di board.
+Outputs can be downloaded from the **Actions** tab (artifacts). Gerber layers follow the
+**File → Plot** settings saved in the board.
 
-Untuk rilis produksi:
+For a production release:
 
 ```bash
 git tag v1.0 && git push origin v1.0
 ```
 
-Jika ERC/DRC bersih, GitHub Release `v1.0` dibuat dengan zip lengkap, Gerber, schematic, BOM, dan file posisi.
+If ERC/DRC are clean, a GitHub Release `v1.0` is created with the full zip, Gerbers, schematic, BOM and placement file.
