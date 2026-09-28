@@ -39,6 +39,8 @@ libraries/
   PROJECT_NAME.kicad_sym     simbol khusus project
   PROJECT_NAME.pretty/       footprint khusus project
   PROJECT_NAME.3dshapes/     model 3D (STEP/WRL)
+  <nama>/                    library eksternal (git submodule)
+scripts/                     init.sh, add-library.sh
 .github/workflows/kicad.yml  ERC, DRC, dan output fabrikasi
 ```
 
@@ -48,6 +50,33 @@ Untuk model 3D, isi path footprint dengan `${KIPRJMOD}/../../libraries/PROJECT_N
 
 Title block memakai text variable `${PROJECT}`, `${REVISION}` dan `${CURRENT_DATE}`.
 `REVISION` bernilai `dev` di KiCad dan diisi otomatis oleh CI dari tag git / commit.
+
+## Library eksternal (git submodule)
+
+Library KiCad pihak ketiga / bersama ditambahkan sebagai git submodule di `libraries/`:
+
+```bash
+scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/<kicad-lib>
+scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git mylib -b main
+git commit -m "Add mylib library"
+```
+
+Script ini menjalankan `git submodule add`, lalu mendaftarkan setiap `*.kicad_sym` dan `*.pretty`
+di dalam submodule ke `sym-lib-table` / `fp-lib-table` project (nickname = nama file, path lewat
+`${KIPRJMOD}`). Nickname yang sudah ada dilewati. Buka ulang project di KiCad setelahnya.
+
+Bekerja dengan submodule:
+
+```bash
+git clone --recursive <repo-url>              # clone beserta library
+git submodule update --init --recursive       # setelah clone / pull biasa
+git submodule update --remote libraries/mylib # update library ke commit terbaru
+```
+
+Untuk menghapus library: `git rm libraries/mylib`, lalu hapus entri-nya dari lib table.
+
+Gunakan URL `https://` agar CI bisa mengambilnya. Untuk repository library private, tambahkan
+repository secret `SUBMODULE_TOKEN` (PAT dengan akses read); checkout di CI otomatis memakainya.
 
 ## CI & rilis
 

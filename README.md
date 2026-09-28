@@ -39,6 +39,8 @@ libraries/
   PROJECT_NAME.kicad_sym     project-specific symbols
   PROJECT_NAME.pretty/       project-specific footprints
   PROJECT_NAME.3dshapes/     3D models (STEP/WRL)
+  <name>/                    external libraries (git submodules)
+scripts/                     init.sh, add-library.sh
 .github/workflows/kicad.yml  ERC, DRC and fabrication outputs
 ```
 
@@ -48,6 +50,33 @@ For 3D models, set the footprint model path to `${KIPRJMOD}/../../libraries/PROJ
 
 The title block uses the text variables `${PROJECT}`, `${REVISION}` and `${CURRENT_DATE}`.
 `REVISION` is `dev` inside KiCad and is filled in by CI from the git tag / commit.
+
+## External libraries (git submodules)
+
+Third-party / shared KiCad libraries are added as git submodules under `libraries/`:
+
+```bash
+scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/<kicad-lib>
+scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git mylib -b main
+git commit -m "Add mylib library"
+```
+
+The script runs `git submodule add`, then registers every `*.kicad_sym` and `*.pretty` found in
+the submodule in the project's `sym-lib-table` / `fp-lib-table` (nickname = file name, path via
+`${KIPRJMOD}`). Nicknames that already exist are skipped. Reopen the project in KiCad afterwards.
+
+Working with submodules:
+
+```bash
+git clone --recursive <repo-url>              # clone including libraries
+git submodule update --init --recursive       # after a normal clone / pull
+git submodule update --remote libraries/mylib # update a library to its latest commit
+```
+
+To remove a library: `git rm libraries/mylib`, then delete its entries from the lib tables.
+
+Use `https://` URLs so CI can fetch them. For private library repositories, add a repository
+secret `SUBMODULE_TOKEN` (a PAT with read access); the CI checkout uses it automatically.
 
 ## CI & releases
 
