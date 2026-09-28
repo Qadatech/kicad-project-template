@@ -40,7 +40,7 @@ libraries/
   PROJECT_NAME.pretty/       project-specific footprints
   PROJECT_NAME.3dshapes/     3D models (STEP/WRL)
   external/<name>/           external libraries (git submodules)
-scripts/                     init.sh, add-library.sh, mcp-kicad.sh
+scripts/                     init.sh, add/remove-library.sh, mcp-kicad.sh
 .mcp.json, .vscode/, .cursor/ MCP config for AI assistants
 AGENTS.md, CLAUDE.md         instructions for AI agents
 .github/workflows/kicad.yml  ERC, DRC and fabrication outputs
@@ -75,7 +75,16 @@ git submodule update --init --recursive       # after a normal clone / pull
 git submodule update --remote libraries/external/mylib # update a library to its latest commit
 ```
 
-To remove a library: `git rm libraries/external/mylib`, then delete its entries from the lib tables.
+To remove a library:
+
+```bash
+scripts/remove-library.sh mylib
+git commit -m "Remove mylib library"
+```
+
+This deinitialises and removes the submodule (including its copy in `.git/modules`) and drops its
+entries from the lib tables. It refuses to run while the schematic or board still use a symbol or
+footprint from that library; replace those parts first, or pass `--force`.
 
 Use `https://` URLs so CI can fetch them. For private library repositories, add a repository
 secret `SUBMODULE_TOKEN` (a PAT with read access); the CI checkout uses it automatically.

@@ -40,7 +40,7 @@ libraries/
   PROJECT_NAME.pretty/       footprint khusus project
   PROJECT_NAME.3dshapes/     model 3D (STEP/WRL)
   external/<nama>/           library eksternal (git submodule)
-scripts/                     init.sh, add-library.sh, mcp-kicad.sh
+scripts/                     init.sh, add/remove-library.sh, mcp-kicad.sh
 .mcp.json, .vscode/, .cursor/ konfigurasi MCP untuk asisten AI
 AGENTS.md, CLAUDE.md         instruksi untuk AI agent
 .github/workflows/kicad.yml  ERC, DRC, dan output fabrikasi
@@ -75,7 +75,16 @@ git submodule update --init --recursive       # setelah clone / pull biasa
 git submodule update --remote libraries/external/mylib # update library ke commit terbaru
 ```
 
-Untuk menghapus library: `git rm libraries/external/mylib`, lalu hapus entri-nya dari lib table.
+Untuk menghapus library:
+
+```bash
+scripts/remove-library.sh mylib
+git commit -m "Remove mylib library"
+```
+
+Script ini melepas dan menghapus submodule (termasuk salinannya di `.git/modules`) serta menghapus
+entri-nya dari lib table. Script menolak jalan selama schematic atau board masih memakai simbol atau
+footprint dari library tersebut; ganti komponennya dulu, atau pakai `--force`.
 
 Gunakan URL `https://` agar CI bisa mengambilnya. Untuk repository library private, tambahkan
 repository secret `SUBMODULE_TOKEN` (PAT dengan akses read); checkout di CI otomatis memakainya.

@@ -28,7 +28,8 @@ configured in `.mcp.json`, `.vscode/mcp.json` and `.cursor/mcp.json`, started vi
 - KiCad files are S-expressions written by KiCad. If you must edit them directly, keep the
   existing formatting (tabs, one item per line), preserve every `uuid`, and never reorder blocks.
 - Do not edit files while they are open in KiCad (a `*.lck` file exists); ask the user to close them.
-- Add external libraries only with `scripts/add-library.sh <https-url>`; do not copy third-party
+- Add / remove external libraries only with `scripts/add-library.sh <https-url>` /
+  `scripts/remove-library.sh <name>`; do not copy third-party
   libraries into `libraries/PROJECT_NAME.*`.
 - New project-owned symbols/footprints go into `libraries/PROJECT_NAME.kicad_sym` / `.pretty/`.
   3D model paths: `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step`.
