@@ -39,7 +39,7 @@ libraries/
   PROJECT_NAME.kicad_sym     project-specific symbols
   PROJECT_NAME.pretty/       project-specific footprints
   PROJECT_NAME.3dshapes/     3D models (STEP/WRL)
-  <name>/                    external libraries (git submodules)
+  external/<name>/           external libraries (git submodules)
 scripts/                     init.sh, add-library.sh
 .github/workflows/kicad.yml  ERC, DRC and fabrication outputs
 ```
@@ -53,10 +53,10 @@ The title block uses the text variables `${PROJECT}`, `${REVISION}` and `${CURRE
 
 ## External libraries (git submodules)
 
-Third-party / shared KiCad libraries are added as git submodules under `libraries/`:
+Third-party / shared KiCad libraries are added as git submodules under `libraries/external/`:
 
 ```bash
-scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/<kicad-lib>
+scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/external/<kicad-lib>
 scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git mylib -b main
 git commit -m "Add mylib library"
 ```
@@ -70,10 +70,10 @@ Working with submodules:
 ```bash
 git clone --recursive <repo-url>              # clone including libraries
 git submodule update --init --recursive       # after a normal clone / pull
-git submodule update --remote libraries/mylib # update a library to its latest commit
+git submodule update --remote libraries/external/mylib # update a library to its latest commit
 ```
 
-To remove a library: `git rm libraries/mylib`, then delete its entries from the lib tables.
+To remove a library: `git rm libraries/external/mylib`, then delete its entries from the lib tables.
 
 Use `https://` URLs so CI can fetch them. For private library repositories, add a repository
 secret `SUBMODULE_TOKEN` (a PAT with read access); the CI checkout uses it automatically.

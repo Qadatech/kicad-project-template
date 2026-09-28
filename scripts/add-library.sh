@@ -4,7 +4,7 @@
 #
 #   scripts/add-library.sh <git-url> [name] [-b branch]
 #
-# The submodule is placed in libraries/<name> (name defaults to the repository
+# The submodule is placed in libraries/external/<name> (name defaults to the repository
 # name). Every *.kicad_sym file and *.pretty directory found inside it is added
 # to the project library tables with a ${KIPRJMOD}-relative path.
 set -euo pipefail
@@ -30,7 +30,7 @@ cd "$(dirname "$0")/.."
 PRO="$(find sources -mindepth 2 -maxdepth 2 -name '*.kicad_pro' | head -n1)"
 [[ -n "$PRO" ]] || { echo "error: no .kicad_pro found under sources/" >&2; exit 1; }
 PRJ_DIR="$(dirname "$PRO")"
-DEST="libraries/$NAME"
+DEST="libraries/external/$NAME"
 
 if [[ "$URL" == git@* ]]; then
   echo "warning: SSH URL used; CI and other users need access via SSH. Prefer https://" >&2
