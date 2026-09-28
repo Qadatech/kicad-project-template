@@ -7,7 +7,7 @@ on:
   push:
     branches: ["**"]
     tags: ["v*"]
-    paths-ignore: ["**.md", "docs/**"]
+    paths-ignore: ["**.md", "docs/**", ".mcp.json", ".vscode/**", ".cursor/**", "scripts/mcp-kicad.sh"]
   pull_request:
   workflow_dispatch:
 

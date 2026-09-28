@@ -20,5 +20,6 @@ production/
 # OS / editor
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/mcp.json
 .idea/

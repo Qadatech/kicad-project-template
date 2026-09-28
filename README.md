@@ -40,7 +40,9 @@ libraries/
   PROJECT_NAME.pretty/       project-specific footprints
   PROJECT_NAME.3dshapes/     3D models (STEP/WRL)
   external/<name>/           external libraries (git submodules)
-scripts/                     init.sh, add-library.sh
+scripts/                     init.sh, add-library.sh, mcp-kicad.sh
+.mcp.json, .vscode/, .cursor/ MCP config for AI assistants
+AGENTS.md, CLAUDE.md         instructions for AI agents
 .github/workflows/kicad.yml  ERC, DRC and fabrication outputs
 ```
 
@@ -77,6 +79,29 @@ To remove a library: `git rm libraries/external/mylib`, then delete its entries 
 
 Use `https://` URLs so CI can fetch them. For private library repositories, add a repository
 secret `SUBMODULE_TOKEN` (a PAT with read access); the CI checkout uses it automatically.
+
+## AI assistants (MCP)
+
+The repository ships a ready-to-use [Model Context Protocol](https://modelcontextprotocol.io) server
+for KiCad, [kicad-mcp-pro](https://github.com/oaslananka/kicad-mcp-pro), already pointed at this project:
+
+| Client | Config |
+| --- | --- |
+| Claude Code | `.mcp.json` (approve the `kicad` server on first start) |
+| VS Code / Copilot | `.vscode/mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+| Other clients | command `bash scripts/mcp-kicad.sh` (stdio) |
+
+Requirements: [uv](https://docs.astral.sh/uv/getting-started/installation/) (`uvx`) and KiCad 10
+with `kicad-cli` on `PATH`. On Windows, run through Git Bash / WSL.
+The server finds `sources/*/*.kicad_pro` itself, so nothing needs to be edited per project.
+
+Behaviour can be tuned with environment variables read by `scripts/mcp-kicad.sh`:
+`KICAD_MCP_OPERATING_MODE` (`readonly`, `write` *(default)*, `manufacturing`),
+`KICAD_MCP_PROFILE` (`default`, `review`, `build`, `release`, `full`, ...) and
+`KICAD_MCP_PACKAGE` (e.g. `kicad-mcp-pro==3.35.0` to pin a version).
+
+Project conventions for AI agents live in [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` imports it).
 
 ## CI & releases
 

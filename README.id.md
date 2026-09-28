@@ -40,7 +40,9 @@ libraries/
   PROJECT_NAME.pretty/       footprint khusus project
   PROJECT_NAME.3dshapes/     model 3D (STEP/WRL)
   external/<nama>/           library eksternal (git submodule)
-scripts/                     init.sh, add-library.sh
+scripts/                     init.sh, add-library.sh, mcp-kicad.sh
+.mcp.json, .vscode/, .cursor/ konfigurasi MCP untuk asisten AI
+AGENTS.md, CLAUDE.md         instruksi untuk AI agent
 .github/workflows/kicad.yml  ERC, DRC, dan output fabrikasi
 ```
 
@@ -77,6 +79,29 @@ Untuk menghapus library: `git rm libraries/external/mylib`, lalu hapus entri-nya
 
 Gunakan URL `https://` agar CI bisa mengambilnya. Untuk repository library private, tambahkan
 repository secret `SUBMODULE_TOKEN` (PAT dengan akses read); checkout di CI otomatis memakainya.
+
+## Asisten AI (MCP)
+
+Repository ini sudah menyertakan server [Model Context Protocol](https://modelcontextprotocol.io)
+untuk KiCad, [kicad-mcp-pro](https://github.com/oaslananka/kicad-mcp-pro), yang langsung mengarah ke project ini:
+
+| Client | Konfigurasi |
+| --- | --- |
+| Claude Code | `.mcp.json` (setujui server `kicad` saat pertama kali dijalankan) |
+| VS Code / Copilot | `.vscode/mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+| Client lain | perintah `bash scripts/mcp-kicad.sh` (stdio) |
+
+Kebutuhan: [uv](https://docs.astral.sh/uv/getting-started/installation/) (`uvx`) dan KiCad 10
+dengan `kicad-cli` di `PATH`. Di Windows, jalankan lewat Git Bash / WSL.
+Server mencari `sources/*/*.kicad_pro` sendiri, jadi tidak ada yang perlu diubah per project.
+
+Perilaku server bisa diatur dengan environment variable yang dibaca `scripts/mcp-kicad.sh`:
+`KICAD_MCP_OPERATING_MODE` (`readonly`, `write` *(default)*, `manufacturing`),
+`KICAD_MCP_PROFILE` (`default`, `review`, `build`, `release`, `full`, ...) dan
+`KICAD_MCP_PACKAGE` (mis. `kicad-mcp-pro==3.35.0` untuk mengunci versi).
+
+Aturan project untuk AI agent ada di [`AGENTS.md`](AGENTS.md) (di-import oleh `CLAUDE.md`).
 
 ## CI & rilis
 
