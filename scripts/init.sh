@@ -4,11 +4,13 @@
 #   scripts/init.sh [name]
 #
 # Without an argument the name is taken from the repository directory.
+# INIT_PLACEHOLDER=<old-name> renames from a name other than PROJECT_NAME
+# (e.g. a repository that was created from an already-initialised template).
 # Runs automatically via .github/workflows/template-init.yml when a new
 # repository is created from this template on GitHub.
 set -euo pipefail
 
-PLACEHOLDER="PROJECT_NAME"
+PLACEHOLDER="${INIT_PLACEHOLDER:-PROJECT_NAME}"
 
 cd "$(dirname "$0")/.."
 

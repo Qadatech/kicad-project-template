@@ -18,14 +18,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check whether the placeholder still exists
+      # Only rename in repositories generated from the template, never in the template
+      # itself (it may not be flagged as a template yet when it is first pushed).
+      # A manual "Run workflow" skips this check.
+      - name: Check whether initialisation is needed
         id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -d sources/PROJECT_NAME ]; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-          else
+          if [ ! -d sources/PROJECT_NAME ]; then
             echo "Already initialised."
+            exit 0
           fi
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+            tpl="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.template_repository.full_name // empty')"
+            if [ -z "$tpl" ]; then
+              echo "Not generated from a template (this is the template repository), skipping."
+              exit 0
+            fi
+            echo "Generated from $tpl"
+          fi
+          echo "needed=true" >> "$GITHUB_OUTPUT"
 
       - name: Rename project
         if: steps.check.outputs.needed == 'true'
