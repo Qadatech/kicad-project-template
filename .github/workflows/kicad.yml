@@ -53,7 +53,7 @@ jobs:
       - name: Install git and zip
         run: apt-get update -qq && apt-get install -y -qq --no-install-recommends git zip ca-certificates >/dev/null
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
@@ -117,7 +117,7 @@ jobs:
             -o "$OUT/$NAME-pcb.pdf" "$PCB"
           kicad-cli pcb export step -f --subst-models -o "$OUT/$NAME.step" "$PCB"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ${{ env.NAME }}-${{ env.REV }}
@@ -135,7 +135,7 @@ jobs:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ needs.kicad.outputs.name }}-${{ needs.kicad.outputs.rev }}
           path: ${{ needs.kicad.outputs.name }}-${{ needs.kicad.outputs.rev }}
