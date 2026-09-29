@@ -9,13 +9,15 @@ KiCad 10 hardware project.
 
 1. Click **Use this template → Create a new repository** on GitHub. The repository name
    becomes the KiCad project name (e.g. `sensor-board`).
-2. The **Template init** workflow runs automatically on the first push:
-   - `PROJECT_NAME` is replaced with the repository name in both file names and file contents
-     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, etc.)
-   - the root schematic UUID is regenerated
-   - this section is removed from both READMEs and the result is committed by `github-actions[bot]`
-   - the **KiCad CI** workflow is triggered for the renamed project
+2. The **KiCad** workflow runs once, titled *"Rename project to sensor-board, then build"*:
+   - job **Rename project**: replaces `PROJECT_NAME` with the repository name in file names and contents
+     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, etc.),
+     regenerates the root schematic UUID, removes this section from both READMEs and commits the
+     result as `github-actions[bot]`
+   - job **Build**: ERC, DRC and fabrication outputs for the renamed project
 3. `git pull`, then open the `.kicad_pro` file in KiCad.
+
+After that, every push shows a single *"Build: …"* run (with **Rename project** skipped).
 
 Cloned locally without GitHub? Run it yourself:
 
@@ -23,12 +25,9 @@ Cloned locally without GitHub? Run it yourself:
 scripts/init.sh my-project   # no argument: uses the repository folder name
 ```
 
-> If the workflow's push is rejected, go to **Settings → Actions → General → Workflow permissions**,
-> select **Read and write permissions**, then re-run the *Template init* workflow
-> (Actions tab → Template init → Run workflow).
-
-After initialisation, `scripts/init.sh` and `.github/workflows/template-init.yml` no longer
-do anything and can be deleted.
+> If the rename commit is rejected, go to **Settings → Actions → General → Workflow permissions**,
+> select **Read and write permissions**, then start the workflow manually
+> (Actions tab → KiCad → Run workflow).
 <!-- template:end -->
 
 ## Layout

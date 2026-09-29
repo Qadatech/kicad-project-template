@@ -1,7 +1,20 @@
-# ERC/DRC checks and fabrication outputs with kicad-cli.
+# One workflow for everything, one run per push:
+#   Rename project  - only on the first push of a repository generated from the template:
+#                     renames PROJECT_NAME to the repository name and commits it.
+#   Build           - ERC, DRC and fabrication outputs with kicad-cli.
+#   Release         - on a v* tag: attaches the outputs to a GitHub Release.
 # The project is discovered automatically (sources/*/*.kicad_pro), nothing is hard-coded.
-# Push a tag like v1.0 to attach a production zip to a GitHub Release.
-name: KiCad CI
+name: KiCad
+
+run-name: >-
+  ${{
+    github.event_name == 'workflow_dispatch' && 'Manual run' ||
+    github.ref_type == 'tag' && format('Release {0}', github.ref_name) ||
+    github.event_name == 'pull_request' && format('Build PR #{0}: {1}', github.event.number, github.event.pull_request.title) ||
+    github.event.created && !github.event.repository.is_template && github.ref_name == github.event.repository.default_branch
+      && format('Rename project to {0}, then build', github.event.repository.name) ||
+    format('Build: {0}', github.event.head_commit.message)
+  }}
 
 on:
   push:
@@ -15,30 +28,61 @@ permissions:
   contents: write
 
 jobs:
-  # In a repository just generated from the template, the first push still contains
-  # PROJECT_NAME; Template init renames it and then starts this workflow itself.
-  check:
+  rename:
+    name: Rename project
+    # First push of a new repository (or a manual run), never in the template itself.
+    if: >-
+      !github.event.repository.is_template &&
+      github.ref_name == github.event.repository.default_branch &&
+      (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.created))
     runs-on: ubuntu-latest
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
-      - id: check
+      - uses: actions/checkout@v7
+
+      # The template repository may not be flagged as a template yet on its own first push,
+      # so also require that this repository was generated from a template.
+      - name: Check whether the project still has the template name
+        id: check
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          run=true
-          if gh api "repos/$GITHUB_REPOSITORY/contents/sources/PROJECT_NAME?ref=$GITHUB_SHA" --silent 2>/dev/null; then
-            tpl="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.template_repository.full_name // empty')"
-            if [ -n "$tpl" ]; then
-              echo "Not initialised yet; Template init will run KiCad CI after renaming."
-              run=false
-            fi
+          if [ ! -d sources/PROJECT_NAME ]; then
+            echo "Project already renamed, nothing to do."
+            exit 0
           fi
-          echo "run=$run" >> "$GITHUB_OUTPUT"
+          tpl="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.template_repository.full_name // empty')"
+          if [ -z "$tpl" ] && [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+            echo "Not generated from a template (this is the template repository), nothing to do."
+            exit 0
+          fi
+          echo "needed=true" >> "$GITHUB_OUTPUT"
 
-  kicad:
-    needs: check
-    if: needs.check.outputs.run == 'true'
+      - name: Rename PROJECT_NAME to ${{ github.event.repository.name }}
+        if: steps.check.outputs.needed == 'true'
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: bash scripts/init.sh "$REPO_NAME"
+
+      - name: Commit and push
+        id: commit
+        if: steps.check.outputs.needed == 'true'
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Rename project to ${REPO_NAME}"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build
+    needs: rename
+    # Runs after Rename project, or on its own when that job is skipped.
+    if: ${{ !cancelled() && needs.rename.result != 'failure' }}
     runs-on: ubuntu-latest
     # Use kicad/kicad:10.0-full if you need KiCad's 3D models in the STEP export (much larger image).
     container:
@@ -55,6 +99,8 @@ jobs:
 
       - uses: actions/checkout@v7
         with:
+          # Build the renamed commit if Rename project just pushed one.
+          ref: ${{ needs.rename.outputs.sha || github.sha }}
           fetch-depth: 0
           submodules: recursive
           # Private library submodules: add a SUBMODULE_TOKEN secret (PAT with read access).
@@ -131,20 +177,21 @@ jobs:
           exit 1
 
   release:
-    needs: kicad
-    if: github.ref_type == 'tag'
+    name: Release
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: ${{ needs.kicad.outputs.name }}-${{ needs.kicad.outputs.rev }}
-          path: ${{ needs.kicad.outputs.name }}-${{ needs.kicad.outputs.rev }}
+          name: ${{ needs.build.outputs.name }}-${{ needs.build.outputs.rev }}
+          path: ${{ needs.build.outputs.name }}-${{ needs.build.outputs.rev }}
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          NAME: ${{ needs.kicad.outputs.name }}
-          REV: ${{ needs.kicad.outputs.rev }}
+          NAME: ${{ needs.build.outputs.name }}
+          REV: ${{ needs.build.outputs.rev }}
         run: |
           D="$NAME-$REV"
           zip -q -r "$D.zip" "$D"

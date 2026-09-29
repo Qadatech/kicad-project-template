@@ -9,13 +9,15 @@ Project hardware KiCad 10.
 
 1. Klik **Use this template → Create a new repository** di GitHub. Nama repository
    akan menjadi nama project KiCad (mis. `sensor-board`).
-2. Workflow **Template init** berjalan otomatis pada push pertama:
-   - `PROJECT_NAME` diganti dengan nama repository, di nama file maupun isi file
-     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, dst.)
-   - UUID root schematic di-generate ulang
-   - bagian ini dihapus dari kedua README, lalu hasilnya di-commit oleh `github-actions[bot]`
-   - workflow **KiCad CI** dijalankan untuk project yang sudah di-rename
+2. Workflow **KiCad** berjalan sekali dengan judul *"Rename project to sensor-board, then build"*:
+   - job **Rename project**: mengganti `PROJECT_NAME` dengan nama repository di nama file maupun isi file
+     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, dst.),
+     membuat ulang UUID root schematic, menghapus bagian ini dari kedua README, lalu di-commit
+     oleh `github-actions[bot]`
+   - job **Build**: ERC, DRC, dan output fabrikasi untuk project yang sudah di-rename
 3. `git pull`, lalu buka file `.kicad_pro` di KiCad.
+
+Setelah itu, setiap push hanya menampilkan satu run *"Build: …"* (job **Rename project** di-skip).
 
 Clone lokal tanpa GitHub? Jalankan sendiri:
 
@@ -23,12 +25,9 @@ Clone lokal tanpa GitHub? Jalankan sendiri:
 scripts/init.sh nama-project   # tanpa argumen: pakai nama folder repository
 ```
 
-> Jika push dari workflow ditolak, buka **Settings → Actions → General → Workflow permissions**
-> dan pilih **Read and write permissions**, lalu jalankan ulang workflow *Template init*
-> (tab Actions → Template init → Run workflow).
-
-Setelah inisialisasi, `scripts/init.sh` dan `.github/workflows/template-init.yml` tidak
-melakukan apa-apa lagi dan boleh dihapus.
+> Jika commit rename ditolak, buka **Settings → Actions → General → Workflow permissions**,
+> pilih **Read and write permissions**, lalu jalankan workflow secara manual
+> (tab Actions → KiCad → Run workflow).
 <!-- template:end -->
 
 ## Struktur
