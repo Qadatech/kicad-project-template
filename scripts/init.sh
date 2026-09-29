@@ -31,10 +31,11 @@ fi
 
 echo "Initialising project '$NAME'"
 
-# Files that must keep the literal placeholder.
+# Files that must keep the literal placeholder. Workflows check for it, and
+# GITHUB_TOKEN is not allowed to push changes to .github/workflows anyway.
 is_excluded() {
   case "$1" in
-    ./scripts/init.sh|./.github/workflows/template-init.yml) return 0 ;;
+    ./scripts/init.sh|./.github/workflows/*) return 0 ;;
     ./.git/*) return 0 ;;
   esac
   return 1
