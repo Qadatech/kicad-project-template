@@ -5,10 +5,7 @@
 Project hardware KiCad 10.
 
 **Daftar isi**
-
-<!-- template:start -->
 - [Menggunakan template ini](#menggunakan-template-ini)
-<!-- template:end -->
 - [Struktur](#struktur)
 - [Menambah part dan library](#menambah-part-dan-library)
   - [A. Library bawaan KiCad](#a-library-bawaan-kicad)
@@ -19,7 +16,6 @@ Project hardware KiCad 10.
 - [Asisten AI (MCP)](#asisten-ai-mcp)
 - [CI & rilis](#ci--rilis)
 
-<!-- template:start -->
 ## Menggunakan template ini
 
 1. Klik **Use this template → Create a new repository** di GitHub. Nama repository

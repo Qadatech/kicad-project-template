@@ -5,10 +5,7 @@
 KiCad 10 hardware project.
 
 **Contents**
-
-<!-- template:start -->
 - [Using this template](#using-this-template)
-<!-- template:end -->
 - [Layout](#layout)
 - [Adding parts and libraries](#adding-parts-and-libraries)
   - [A. KiCad built-in libraries](#a-kicad-built-in-libraries)
@@ -19,7 +16,6 @@ KiCad 10 hardware project.
 - [AI assistants (MCP)](#ai-assistants-mcp)
 - [CI & releases](#ci--releases)
 
-<!-- template:start -->
 ## Using this template
 
 1. Click **Use this template → Create a new repository** on GitHub. The repository name
