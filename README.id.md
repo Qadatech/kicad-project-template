@@ -4,6 +4,21 @@
 
 Project hardware KiCad 10.
 
+**Daftar isi**
+
+<!-- template:start -->
+- [Menggunakan template ini](#menggunakan-template-ini)
+<!-- template:end -->
+- [Struktur](#struktur)
+- [Menambah part dan library](#menambah-part-dan-library)
+  - [A. Library bawaan KiCad](#a-library-bawaan-kicad)
+  - [B. Repository git library KiCad (submodule)](#b-repository-git-library-kicad-submodule)
+  - [C. Download dari vendor (zip)](#c-download-dari-vendor-zip)
+  - [D. Gambar sendiri](#d-gambar-sendiri)
+  - [Setelah menambah part](#setelah-menambah-part)
+- [Asisten AI (MCP)](#asisten-ai-mcp)
+- [CI & rilis](#ci--rilis)
+
 <!-- template:start -->
 ## Menggunakan template ini
 

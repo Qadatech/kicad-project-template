@@ -4,6 +4,21 @@
 
 KiCad 10 hardware project.
 
+**Contents**
+
+<!-- template:start -->
+- [Using this template](#using-this-template)
+<!-- template:end -->
+- [Layout](#layout)
+- [Adding parts and libraries](#adding-parts-and-libraries)
+  - [A. KiCad built-in libraries](#a-kicad-built-in-libraries)
+  - [B. Git repository of a KiCad library (submodule)](#b-git-repository-of-a-kicad-library-submodule)
+  - [C. Vendor download (zip)](#c-vendor-download-zip)
+  - [D. Draw it yourself](#d-draw-it-yourself)
+  - [After adding a part](#after-adding-a-part)
+- [AI assistants (MCP)](#ai-assistants-mcp)
+- [CI & releases](#ci--releases)
+
 <!-- template:start -->
 ## Using this template
 
