@@ -22,7 +22,7 @@ Proyek perangkat keras KiCad 10.
 
 1. Klik **Use this template → Create a new repository** di GitHub. Nama repositori
    akan menjadi nama proyek KiCad (misalnya `sensor-board`).
-2. Workflow **KiCad** berjalan satu kali dengan judul *"Updating the project name to sensor-board, then checking the build"*:
+2. Workflow **KiCad** berjalan satu kali:
    - job **Rename project** mengganti `PROJECT_NAME` dengan nama repositori, baik pada nama berkas
      maupun isi berkas (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`,
      dan seterusnya), membuat ulang UUID skematik utama, lalu menyimpan perubahan sebagai commit
