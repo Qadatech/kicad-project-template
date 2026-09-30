@@ -2,87 +2,89 @@
 
 [English](README.md) | **Bahasa Indonesia**
 
-Project hardware KiCad 10.
+Proyek perangkat keras KiCad 10.
 
-> ⚠️ **Disclaimer Kode Hasil AI:** Project ini berisi kode yang dibuat dengan bantuan AI. Meskipun fungsi utamanya sudah diuji dan divalidasi secara menyeluruh, harap tinjau semua kode sebelum dipakai di lingkungan produksi.
+> ⚠️ **Penafian Kode Hasil AI:** Proyek ini berisi kode yang dibuat dengan bantuan perangkat AI. Meskipun fungsi utamanya telah diuji dan divalidasi secara menyeluruh, harap tinjau seluruh kode sebelum digunakan di lingkungan produksi.
 
 **Daftar isi**
-- [Menggunakan template ini](#menggunakan-template-ini)
-- [Struktur](#struktur)
-- [Menambah part dan library](#menambah-part-dan-library)
-  - [A. Library bawaan KiCad](#a-library-bawaan-kicad)
-  - [B. Repository git library KiCad (submodule)](#b-repository-git-library-kicad-submodule)
-  - [C. Download dari vendor (zip)](#c-download-dari-vendor-zip)
-  - [D. Gambar sendiri](#d-gambar-sendiri)
-  - [Setelah menambah part](#setelah-menambah-part)
+- [Menggunakan templat ini](#menggunakan-templat-ini)
+- [Struktur direktori](#struktur-direktori)
+- [Menambahkan komponen dan pustaka](#menambahkan-komponen-dan-pustaka)
+  - [A. Pustaka bawaan KiCad](#a-pustaka-bawaan-kicad)
+  - [B. Repositori git pustaka KiCad (submodule)](#b-repositori-git-pustaka-kicad-submodule)
+  - [C. Berkas unduhan dari vendor (zip)](#c-berkas-unduhan-dari-vendor-zip)
+  - [D. Membuat sendiri](#d-membuat-sendiri)
+  - [Setelah menambahkan komponen](#setelah-menambahkan-komponen)
 - [Asisten AI (MCP)](#asisten-ai-mcp)
-- [CI & rilis](#ci--rilis)
+- [CI dan rilis](#ci-dan-rilis)
 
-## Menggunakan template ini
+## Menggunakan templat ini
 
-1. Klik **Use this template → Create a new repository** di GitHub. Nama repository
-   akan menjadi nama project KiCad (mis. `sensor-board`).
-2. Workflow **KiCad** berjalan sekali dengan judul *"Updating the project name to sensor-board, then checking the build"*:
-   - job **Rename project**: mengganti `PROJECT_NAME` dengan nama repository di nama file maupun isi file
-     (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`, dst.),
-     membuat ulang UUID root schematic, menghapus bagian ini dari kedua README, lalu di-commit
-     oleh `github-actions[bot]`
-   - job **Build**: ERC, DRC, dan output fabrikasi untuk project yang sudah di-rename
-3. `git pull`, lalu buka file `.kicad_pro` di KiCad.
+1. Klik **Use this template → Create a new repository** di GitHub. Nama repositori
+   akan menjadi nama proyek KiCad (misalnya `sensor-board`).
+2. Workflow **KiCad** berjalan satu kali dengan judul *"Updating the project name to sensor-board, then checking the build"*:
+   - job **Rename project** mengganti `PROJECT_NAME` dengan nama repositori, baik pada nama berkas
+     maupun isi berkas (`sources/sensor-board/sensor-board.kicad_pro`, `libraries/sensor-board.kicad_sym`,
+     dan seterusnya), membuat ulang UUID skematik utama, lalu menyimpan perubahan sebagai commit
+     `github-actions[bot]`;
+   - job **Build** menjalankan ERC, DRC, dan membuat berkas fabrikasi untuk proyek yang namanya
+     telah diganti.
+3. Jalankan `git pull`, lalu buka berkas `.kicad_pro` di KiCad.
 
-Setelah itu, setiap push hanya menampilkan satu run *"Build: …"* (job **Rename project** di-skip).
+Setelah itu, setiap *push* hanya menghasilkan satu *run* berjudul *"Build: …"* (job **Rename project**
+dilewati).
 
-Clone lokal tanpa GitHub? Jalankan sendiri:
+Jika repositori diklon secara lokal tanpa GitHub, jalankan skrip berikut secara manual:
 
 ```bash
-scripts/init.sh nama-project   # tanpa argumen: pakai nama folder repository
+scripts/init.sh nama-proyek   # tanpa argumen: menggunakan nama direktori repositori
 ```
 
-> Jika commit rename ditolak, buka **Settings → Actions → General → Workflow permissions**,
+> Apabila commit penggantian nama ditolak, buka **Settings → Actions → General → Workflow permissions**,
 > pilih **Read and write permissions**, lalu jalankan workflow secara manual
 > (tab Actions → KiCad → Run workflow).
 <!-- template:end -->
 
-## Struktur
+## Struktur direktori
 
 ```
-sources/PROJECT_NAME/        KiCad project (.kicad_pro/.kicad_sch/.kicad_pcb) + lib tables
+sources/PROJECT_NAME/        proyek KiCad (.kicad_pro/.kicad_sch/.kicad_pcb) + tabel pustaka
 libraries/
-  PROJECT_NAME.kicad_sym     simbol khusus project
-  PROJECT_NAME.pretty/       footprint khusus project
+  PROJECT_NAME.kicad_sym     simbol khusus proyek
+  PROJECT_NAME.pretty/       footprint khusus proyek
   PROJECT_NAME.3dshapes/     model 3D (STEP/WRL)
-  external/<nama>/           library eksternal (git submodule)
+  external/<nama>/           pustaka eksternal (git submodule)
 scripts/                     init.sh, add/remove-library.sh, mcp-kicad.sh
 .mcp.json, .vscode/, .cursor/ konfigurasi MCP untuk asisten AI
-AGENTS.md, CLAUDE.md         instruksi untuk AI agent
-.github/workflows/kicad.yml  ERC, DRC, dan output fabrikasi
+AGENTS.md, CLAUDE.md         petunjuk untuk agen AI
+.github/workflows/kicad.yml  ERC, DRC, dan berkas fabrikasi
 ```
 
-Library project sudah terdaftar di `sym-lib-table` / `fp-lib-table` project dengan path
-`${KIPRJMOD}/../../libraries/...`, jadi tetap jalan setelah di-clone di mana pun.
-Untuk model 3D, isi path footprint dengan `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step`.
+Pustaka (*library*) proyek telah terdaftar di `sym-lib-table` dan `fp-lib-table` proyek dengan jalur
+`${KIPRJMOD}/../../libraries/...`, sehingga tetap berfungsi di mana pun repositori diklon.
+Untuk model 3D, isi jalur pada footprint dengan `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<berkas>.step`.
 
-Title block memakai text variable `${PROJECT}`, `${REVISION}` dan `${CURRENT_DATE}`.
-`REVISION` bernilai `dev` di KiCad dan diisi otomatis oleh CI dari tag git / commit.
+Blok judul (*title block*) menggunakan variabel teks `${PROJECT}`, `${REVISION}`, dan `${CURRENT_DATE}`.
+Nilai `REVISION` di KiCad adalah `dev` dan diisi otomatis oleh CI berdasarkan tag atau commit git.
 
-## Menambah part dan library
+## Menambahkan komponen dan pustaka
 
-Tanyakan dulu: **part-nya ada di mana?** Jawabannya menentukan jalurnya.
+Pertama, tentukan **dari mana komponen tersebut berasal**. Jawabannya menentukan langkah yang digunakan.
 
-| Part ada… | Jalur | Masuk ke |
+| Komponen tersedia… | Langkah | Lokasi penyimpanan |
 | --- | --- | --- |
-| di library bawaan KiCad | **A.** langsung pakai | – |
-| di repository git library KiCad | **B.** `scripts/add-library.sh <url>` | `libraries/external/<nama>/` (submodule) |
-| di file download vendor (SnapEDA, Ultra Librarian, zip dari Mouser/DigiKey) | **C.** import | `libraries/PROJECT_NAME.*` |
-| tidak ada di mana pun | **D.** gambar sendiri | `libraries/PROJECT_NAME.*` |
+| di pustaka bawaan KiCad | **A.** langsung digunakan | – |
+| di repositori git pustaka KiCad | **B.** `scripts/add-library.sh <url>` | `libraries/external/<nama>/` (submodule) |
+| dalam berkas unduhan vendor (SnapEDA, Ultra Librarian, zip dari Mouser/DigiKey) | **C.** diimpor | `libraries/PROJECT_NAME.*` |
+| tidak tersedia di mana pun | **D.** dibuat sendiri | `libraries/PROJECT_NAME.*` |
 
-### A. Library bawaan KiCad
+### A. Pustaka bawaan KiCad
 
-Selalu cek di sini dulu: resistor, kapasitor, LED, pin header, regulator umum, header 40-pin
-Raspberry Pi, ... Tekan **A** di schematic editor lalu cari. Library bawaan ikut terpasang bersama
-KiCad (dan di container CI), jadi tidak perlu didaftarkan.
+Selalu periksa pustaka bawaan terlebih dahulu: resistor, kapasitor, LED, *pin header*, regulator umum,
+*header* 40 pin Raspberry Pi, dan sebagainya. Tekan **A** di editor skematik, lalu cari komponennya.
+Pustaka bawaan sudah terpasang bersama KiCad (termasuk di *container* CI), sehingga tidak perlu didaftarkan.
 
-### B. Repository git library KiCad (submodule)
+### B. Repositori git pustaka KiCad (submodule)
 
 ```bash
 scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/external/<kicad-lib>
@@ -90,100 +92,105 @@ scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git mylib -b main
 git commit -m "Add mylib library"
 ```
 
-Script ini menjalankan `git submodule add`, lalu mendaftarkan setiap `*.kicad_sym` dan `*.pretty`
-di dalam submodule ke `sym-lib-table` / `fp-lib-table` project (nickname = nama file, path lewat
-`${KIPRJMOD}`). Nickname yang sudah ada dilewati. Buka ulang project di KiCad setelahnya.
+Skrip ini menjalankan `git submodule add`, lalu mendaftarkan setiap berkas `*.kicad_sym` dan direktori
+`*.pretty` di dalam submodule ke `sym-lib-table` dan `fp-lib-table` proyek (nama panggilan = nama berkas,
+jalur melalui `${KIPRJMOD}`). Nama panggilan yang sudah ada akan dilewati. Setelah itu, buka kembali
+proyek di KiCad.
 
-Submodule membuat repository tetap kecil, mengunci versi library per revisi board, dan bisa di-update
-kalau vendor memperbaiki sesuatu. **Jangan pernah mengedit file di `libraries/external/`**; kalau
-perlu mengubah satu part, copy ke library project (jalur C/D).
+Submodule menjaga ukuran repositori tetap kecil, mengunci versi pustaka untuk setiap revisi papan, dan
+dapat diperbarui apabila vendor melakukan perbaikan. **Jangan pernah mengubah berkas di
+`libraries/external/`**; apabila perlu mengubah suatu komponen, salin komponen tersebut ke pustaka
+proyek (langkah C/D).
 
 ```bash
-git clone --recursive <repo-url>              # clone beserta library
-git submodule update --init --recursive       # setelah clone / pull biasa
-git submodule update --remote libraries/external/mylib # update library ke commit terbaru
+git clone --recursive <repo-url>              # mengklon repositori beserta pustakanya
+git submodule update --init --recursive       # setelah clone atau pull biasa
+git submodule update --remote libraries/external/mylib # memperbarui pustaka ke commit terbaru
 ```
 
-Untuk menghapus library:
+Untuk menghapus pustaka:
 
 ```bash
 scripts/remove-library.sh mylib
 git commit -m "Remove mylib library"
 ```
 
-Script ini melepas dan menghapus submodule (termasuk salinannya di `.git/modules`) serta menghapus
-entri-nya dari lib table. Script menolak jalan selama schematic atau board masih memakai simbol atau
-footprint dari library tersebut; ganti komponennya dulu, atau pakai `--force`.
+Skrip ini melepas dan menghapus submodule (termasuk salinannya di `.git/modules`) serta menghapus
+entrinya dari tabel pustaka. Skrip akan menolak berjalan selama skematik atau papan masih menggunakan
+simbol atau footprint dari pustaka tersebut; ganti komponen tersebut terlebih dahulu, atau gunakan `--force`.
 
-Gunakan URL `https://` agar CI bisa mengambilnya. Untuk repository library private, tambahkan
-repository secret `SUBMODULE_TOKEN` (PAT dengan akses read); checkout di CI otomatis memakainya.
+Gunakan URL `https://` agar CI dapat mengambil pustaka tersebut. Untuk repositori pustaka privat,
+tambahkan *repository secret* `SUBMODULE_TOKEN` (PAT dengan akses baca); proses *checkout* di CI akan
+menggunakannya secara otomatis.
 
-### C. Download dari vendor (zip)
+### C. Berkas unduhan dari vendor (zip)
 
-Import file-nya ke library milik project, yang sudah terdaftar:
+Impor berkas tersebut ke pustaka milik proyek, yang sudah terdaftar:
 
-| File | Masukkan ke | Caranya |
+| Berkas | Simpan di | Cara |
 | --- | --- | --- |
-| Simbol (`.kicad_sym`) | `libraries/PROJECT_NAME.kicad_sym` | Symbol Editor → pilih library `PROJECT_NAME` → **File → Import Symbol** |
-| Footprint (`.kicad_mod`) | `libraries/PROJECT_NAME.pretty/` | copy file-nya, atau Footprint Editor → **File → Import Footprint** |
-| Model 3D (`.step`) | `libraries/PROJECT_NAME.3dshapes/` | copy file-nya; di **Properties → 3D Models** footprint isi `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step` |
+| Simbol (`.kicad_sym`) | `libraries/PROJECT_NAME.kicad_sym` | Symbol Editor → pilih pustaka `PROJECT_NAME` → **File → Import Symbol** |
+| Footprint (`.kicad_mod`) | `libraries/PROJECT_NAME.pretty/` | salin berkasnya, atau Footprint Editor → **File → Import Footprint** |
+| Model 3D (`.step`) | `libraries/PROJECT_NAME.3dshapes/` | salin berkasnya; pada **Properties → 3D Models** footprint, isi `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<berkas>.step` |
 
-Lalu isi field **Footprint** di simbol dengan `PROJECT_NAME:<footprint>`.
+Setelah itu, isi kolom **Footprint** pada simbol dengan `PROJECT_NAME:<footprint>`.
 
-> Selalu cek footprint hasil download dengan datasheet (ukuran pad, jarak pin, pin 1). Kesalahan
-> footprint baru ketahuan setelah board datang dari pabrik.
+> Selalu periksa footprint hasil unduhan terhadap *datasheet* (ukuran *pad*, jarak antarpin, dan posisi
+> pin 1). Kesalahan footprint baru akan diketahui setelah papan tiba dari pabrik.
 
-### D. Gambar sendiri
+### D. Membuat sendiri
 
-1. Symbol Editor → **New Symbol** di library `PROJECT_NAME`. Isi **jenis elektrik** setiap pin
-   (Input, Output, Power input, ...) dengan benar: ERC memakainya.
-2. Footprint Editor → **New Footprint** di `PROJECT_NAME.pretty`, mengikuti *recommended land pattern*
-   di datasheet (atau **Footprint Wizard** untuk package standar seperti QFN atau SOIC).
-3. Isi field **Footprint** di simbol dan, kalau ada, model 3D seperti di jalur C.
+1. Symbol Editor → **New Symbol** di pustaka `PROJECT_NAME`. Tentukan **jenis elektrik** setiap pin
+   (Input, Output, Power input, dan sebagainya) dengan benar, karena ERC menggunakannya.
+2. Footprint Editor → **New Footprint** di `PROJECT_NAME.pretty`, sesuai *recommended land pattern*
+   pada *datasheet* (atau gunakan **Footprint Wizard** untuk kemasan standar seperti QFN atau SOIC).
+3. Isi kolom **Footprint** pada simbol dan, jika tersedia, tambahkan model 3D seperti pada langkah C.
 
-### Setelah menambah part
+### Setelah menambahkan komponen
 
-1. Pasang di schematic lalu jalankan **Update PCB from Schematic** (F8).
-2. Jalankan ERC dan DRC (atau minta asisten AI).
-3. `git push`. Kalau CI gagal padahal di laptop lolos, biasanya path library masih absolut
-   (`/Users/...`) dan belum relatif lewat `${KIPRJMOD}`.
+1. Tempatkan komponen di skematik, lalu jalankan **Update PCB from Schematic** (F8).
+2. Jalankan ERC dan DRC (atau minta bantuan asisten AI).
+3. Jalankan `git push`. Apabila CI gagal padahal pemeriksaan di komputer lokal berhasil, biasanya jalur
+   pustaka masih absolut (`/Users/...`) dan belum relatif melalui `${KIPRJMOD}`.
 
 ## Asisten AI (MCP)
 
-Repository ini sudah menyertakan server [Model Context Protocol](https://modelcontextprotocol.io)
-untuk KiCad, [kicad-mcp-pro](https://github.com/oaslananka/kicad-mcp-pro), yang langsung mengarah ke project ini:
+Repositori ini telah menyertakan server [Model Context Protocol](https://modelcontextprotocol.io)
+untuk KiCad, yaitu [kicad-mcp-pro](https://github.com/oaslananka/kicad-mcp-pro), yang langsung
+terhubung ke proyek ini:
 
-| Client | Konfigurasi |
+| Klien | Konfigurasi |
 | --- | --- |
 | Claude Code | `.mcp.json` (setujui server `kicad` saat pertama kali dijalankan) |
 | VS Code / Copilot | `.vscode/mcp.json` |
 | Cursor | `.cursor/mcp.json` |
-| Client lain | perintah `bash scripts/mcp-kicad.sh` (stdio) |
+| Klien lain | perintah `bash scripts/mcp-kicad.sh` (stdio) |
 
 Kebutuhan: [uv](https://docs.astral.sh/uv/getting-started/installation/) (`uvx`) dan KiCad 10
-dengan `kicad-cli` di `PATH`. Di Windows, jalankan lewat Git Bash / WSL.
-Server mencari `sources/*/*.kicad_pro` sendiri, jadi tidak ada yang perlu diubah per project.
+dengan `kicad-cli` pada `PATH`. Di Windows, jalankan melalui Git Bash atau WSL.
+Server menemukan `sources/*/*.kicad_pro` secara otomatis, sehingga tidak ada pengaturan yang perlu
+diubah untuk setiap proyek.
 
-Perilaku server bisa diatur dengan environment variable yang dibaca `scripts/mcp-kicad.sh`:
-`KICAD_MCP_OPERATING_MODE` (`readonly`, `write` *(default)*, `manufacturing`),
-`KICAD_MCP_PROFILE` (`default`, `review`, `build`, `release`, `full`, ...) dan
-`KICAD_MCP_PACKAGE` (mis. `kicad-mcp-pro==3.35.0` untuk mengunci versi).
+Perilaku server dapat diatur melalui variabel lingkungan yang dibaca oleh `scripts/mcp-kicad.sh`:
+`KICAD_MCP_OPERATING_MODE` (`readonly`, `write` *(bawaan)*, `manufacturing`),
+`KICAD_MCP_PROFILE` (`default`, `review`, `build`, `release`, `full`, dan lainnya), serta
+`KICAD_MCP_PACKAGE` (misalnya `kicad-mcp-pro==3.35.0` untuk mengunci versi).
 
-Aturan project untuk AI agent ada di [`AGENTS.md`](AGENTS.md) (di-import oleh `CLAUDE.md`).
+Aturan proyek untuk agen AI terdapat di [`AGENTS.md`](AGENTS.md) (diimpor oleh `CLAUDE.md`).
 
-## CI & rilis
+## CI dan rilis
 
-Setiap push / pull request menjalankan [`kicad.yml`](.github/workflows/kicad.yml) di
-container `kicad/kicad:10.0`:
+Setiap *push* dan *pull request* menjalankan [`kicad.yml`](.github/workflows/kicad.yml) di dalam
+*container* `kicad/kicad:10.0`:
 
-| Langkah | Output |
+| Tahap | Keluaran |
 | --- | --- |
-| ERC, DRC (+ schematic parity) | `reports/erc.rpt`, `reports/drc.rpt` — job gagal jika ada error |
-| Schematic | `PROJECT_NAME-schematic.pdf`, `PROJECT_NAME-bom.csv` |
-| PCB | `gerbers/` + `PROJECT_NAME-gerbers.zip`, drill + drill map, `PROJECT_NAME-pos.csv`, `PROJECT_NAME-pcb.pdf`, `PROJECT_NAME.step` |
+| ERC, DRC (+ kesesuaian skematik dan PCB) | `reports/erc.rpt`, `reports/drc.rpt` — job gagal apabila terdapat *error* |
+| Skematik | `PROJECT_NAME-schematic.pdf`, `PROJECT_NAME-bom.csv` |
+| PCB | `gerbers/` + `PROJECT_NAME-gerbers.zip`, berkas bor + peta bor, `PROJECT_NAME-pos.csv`, `PROJECT_NAME-pcb.pdf`, `PROJECT_NAME.step` |
 
-Output bisa diunduh dari tab **Actions** (artifact). Layer Gerber mengikuti pengaturan
-**File → Plot** yang tersimpan di board.
+Keluaran dapat diunduh dari tab **Actions** (bagian *artifact*). Lapisan Gerber mengikuti pengaturan
+**File → Plot** yang tersimpan di berkas papan.
 
 Untuk rilis produksi:
 
@@ -191,4 +198,5 @@ Untuk rilis produksi:
 git tag v1.0 && git push origin v1.0
 ```
 
-Jika ERC/DRC bersih, GitHub Release `v1.0` dibuat dengan zip lengkap, Gerber, schematic, BOM, dan file posisi.
+Apabila ERC dan DRC bersih, GitHub Release `v1.0` akan dibuat dan berisi arsip zip lengkap, Gerber,
+skematik, BOM, serta berkas posisi komponen.
