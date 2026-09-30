@@ -52,9 +52,24 @@ Untuk model 3D, isi path footprint dengan `${KIPRJMOD}/../../libraries/PROJECT_N
 Title block memakai text variable `${PROJECT}`, `${REVISION}` dan `${CURRENT_DATE}`.
 `REVISION` bernilai `dev` di KiCad dan diisi otomatis oleh CI dari tag git / commit.
 
-## Library eksternal (git submodule)
+## Menambah part dan library
 
-Library KiCad pihak ketiga / bersama ditambahkan sebagai git submodule di `libraries/external/`:
+Tanyakan dulu: **part-nya ada di mana?** Jawabannya menentukan jalurnya.
+
+| Part ada… | Jalur | Masuk ke |
+| --- | --- | --- |
+| di library bawaan KiCad | **A.** langsung pakai | – |
+| di repository git library KiCad | **B.** `scripts/add-library.sh <url>` | `libraries/external/<nama>/` (submodule) |
+| di file download vendor (SnapEDA, Ultra Librarian, zip dari Mouser/DigiKey) | **C.** import | `libraries/PROJECT_NAME.*` |
+| tidak ada di mana pun | **D.** gambar sendiri | `libraries/PROJECT_NAME.*` |
+
+### A. Library bawaan KiCad
+
+Selalu cek di sini dulu: resistor, kapasitor, LED, pin header, regulator umum, header 40-pin
+Raspberry Pi, ... Tekan **A** di schematic editor lalu cari. Library bawaan ikut terpasang bersama
+KiCad (dan di container CI), jadi tidak perlu didaftarkan.
+
+### B. Repository git library KiCad (submodule)
 
 ```bash
 scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/external/<kicad-lib>
@@ -66,7 +81,9 @@ Script ini menjalankan `git submodule add`, lalu mendaftarkan setiap `*.kicad_sy
 di dalam submodule ke `sym-lib-table` / `fp-lib-table` project (nickname = nama file, path lewat
 `${KIPRJMOD}`). Nickname yang sudah ada dilewati. Buka ulang project di KiCad setelahnya.
 
-Bekerja dengan submodule:
+Submodule membuat repository tetap kecil, mengunci versi library per revisi board, dan bisa di-update
+kalau vendor memperbaiki sesuatu. **Jangan pernah mengedit file di `libraries/external/`**; kalau
+perlu mengubah satu part, copy ke library project (jalur C/D).
 
 ```bash
 git clone --recursive <repo-url>              # clone beserta library
@@ -87,6 +104,36 @@ footprint dari library tersebut; ganti komponennya dulu, atau pakai `--force`.
 
 Gunakan URL `https://` agar CI bisa mengambilnya. Untuk repository library private, tambahkan
 repository secret `SUBMODULE_TOKEN` (PAT dengan akses read); checkout di CI otomatis memakainya.
+
+### C. Download dari vendor (zip)
+
+Import file-nya ke library milik project, yang sudah terdaftar:
+
+| File | Masukkan ke | Caranya |
+| --- | --- | --- |
+| Simbol (`.kicad_sym`) | `libraries/PROJECT_NAME.kicad_sym` | Symbol Editor → pilih library `PROJECT_NAME` → **File → Import Symbol** |
+| Footprint (`.kicad_mod`) | `libraries/PROJECT_NAME.pretty/` | copy file-nya, atau Footprint Editor → **File → Import Footprint** |
+| Model 3D (`.step`) | `libraries/PROJECT_NAME.3dshapes/` | copy file-nya; di **Properties → 3D Models** footprint isi `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step` |
+
+Lalu isi field **Footprint** di simbol dengan `PROJECT_NAME:<footprint>`.
+
+> Selalu cek footprint hasil download dengan datasheet (ukuran pad, jarak pin, pin 1). Kesalahan
+> footprint baru ketahuan setelah board datang dari pabrik.
+
+### D. Gambar sendiri
+
+1. Symbol Editor → **New Symbol** di library `PROJECT_NAME`. Isi **jenis elektrik** setiap pin
+   (Input, Output, Power input, ...) dengan benar: ERC memakainya.
+2. Footprint Editor → **New Footprint** di `PROJECT_NAME.pretty`, mengikuti *recommended land pattern*
+   di datasheet (atau **Footprint Wizard** untuk package standar seperti QFN atau SOIC).
+3. Isi field **Footprint** di simbol dan, kalau ada, model 3D seperti di jalur C.
+
+### Setelah menambah part
+
+1. Pasang di schematic lalu jalankan **Update PCB from Schematic** (F8).
+2. Jalankan ERC dan DRC (atau minta asisten AI).
+3. `git push`. Kalau CI gagal padahal di laptop lolos, biasanya path library masih absolut
+   (`/Users/...`) dan belum relatif lewat `${KIPRJMOD}`.
 
 ## Asisten AI (MCP)
 

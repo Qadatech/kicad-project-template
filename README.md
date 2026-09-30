@@ -52,9 +52,24 @@ For 3D models, set the footprint model path to `${KIPRJMOD}/../../libraries/PROJ
 The title block uses the text variables `${PROJECT}`, `${REVISION}` and `${CURRENT_DATE}`.
 `REVISION` is `dev` inside KiCad and is filled in by CI from the git tag / commit.
 
-## External libraries (git submodules)
+## Adding parts and libraries
 
-Third-party / shared KiCad libraries are added as git submodules under `libraries/external/`:
+First ask: **where does the part come from?** That decides the path.
+
+| The part is… | Path | Ends up in |
+| --- | --- | --- |
+| in KiCad's built-in libraries | **A.** use it directly | – |
+| in a git repository of a KiCad library | **B.** `scripts/add-library.sh <url>` | `libraries/external/<name>/` (submodule) |
+| a vendor download (SnapEDA, Ultra Librarian, Mouser/DigiKey zip) | **C.** import it | `libraries/PROJECT_NAME.*` |
+| not available anywhere | **D.** draw it | `libraries/PROJECT_NAME.*` |
+
+### A. KiCad built-in libraries
+
+Always check here first: resistors, capacitors, LEDs, pin headers, common regulators, the
+Raspberry Pi 40-pin header, ... Press **A** in the schematic editor and search. Built-in libraries
+come with KiCad (and the CI container), so nothing needs to be registered.
+
+### B. Git repository of a KiCad library (submodule)
 
 ```bash
 scripts/add-library.sh https://github.com/<owner>/<kicad-lib>.git          # -> libraries/external/<kicad-lib>
@@ -66,7 +81,9 @@ The script runs `git submodule add`, then registers every `*.kicad_sym` and `*.p
 the submodule in the project's `sym-lib-table` / `fp-lib-table` (nickname = file name, path via
 `${KIPRJMOD}`). Nicknames that already exist are skipped. Reopen the project in KiCad afterwards.
 
-Working with submodules:
+Submodules keep the repository small, pin the exact library version per board revision, and can be
+updated when the vendor fixes something. **Never edit files in `libraries/external/`**; to change a
+part, copy it into the project library (path C/D).
 
 ```bash
 git clone --recursive <repo-url>              # clone including libraries
@@ -87,6 +104,36 @@ footprint from that library; replace those parts first, or pass `--force`.
 
 Use `https://` URLs so CI can fetch them. For private library repositories, add a repository
 secret `SUBMODULE_TOKEN` (a PAT with read access); the CI checkout uses it automatically.
+
+### C. Vendor download (zip)
+
+Import the files into the project's own library, which is already registered:
+
+| File | Put it in | How |
+| --- | --- | --- |
+| Symbol (`.kicad_sym`) | `libraries/PROJECT_NAME.kicad_sym` | Symbol Editor → select library `PROJECT_NAME` → **File → Import Symbol** |
+| Footprint (`.kicad_mod`) | `libraries/PROJECT_NAME.pretty/` | copy the file, or Footprint Editor → **File → Import Footprint** |
+| 3D model (`.step`) | `libraries/PROJECT_NAME.3dshapes/` | copy the file; in the footprint's **Properties → 3D Models** use `${KIPRJMOD}/../../libraries/PROJECT_NAME.3dshapes/<file>.step` |
+
+Then set the symbol's **Footprint** field to `PROJECT_NAME:<footprint>`.
+
+> Always check a downloaded footprint against the datasheet (pad size, pitch, pin 1). Footprint
+> mistakes are only discovered once the boards arrive.
+
+### D. Draw it yourself
+
+1. Symbol Editor → **New Symbol** in library `PROJECT_NAME`. Set every pin's **electrical type**
+   (Input, Output, Power input, ...) correctly: ERC relies on it.
+2. Footprint Editor → **New Footprint** in `PROJECT_NAME.pretty`, using the datasheet's recommended
+   land pattern (or the **Footprint Wizard** for standard packages such as QFN or SOIC).
+3. Set the symbol's **Footprint** field and, optionally, a 3D model as in C.
+
+### After adding a part
+
+1. Place it in the schematic and run **Update PCB from Schematic** (F8).
+2. Run ERC and DRC (or ask the AI assistant to).
+3. `git push`. If CI fails although it passes locally, a library path is usually absolute
+   (`/Users/...`) instead of `${KIPRJMOD}`-relative.
 
 ## AI assistants (MCP)
 
