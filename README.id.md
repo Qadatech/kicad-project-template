@@ -4,6 +4,8 @@
 
 Project hardware KiCad 10.
 
+> ⚠️ **Disclaimer Kode Hasil AI:** Project ini berisi kode yang dibuat dengan bantuan AI. Meskipun fungsi utamanya sudah diuji dan divalidasi secara menyeluruh, harap tinjau semua kode sebelum dipakai di lingkungan produksi.
+
 **Daftar isi**
 - [Menggunakan template ini](#menggunakan-template-ini)
 - [Struktur](#struktur)

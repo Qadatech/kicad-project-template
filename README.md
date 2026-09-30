@@ -4,6 +4,8 @@
 
 KiCad 10 hardware project.
 
+> ⚠️ **Generated Code Disclaimer:** This project contains code generated with the assistance of AI tools. While the core functionality has been thoroughly tested and validated, please review all code before use in production environments.
+
 **Contents**
 - [Using this template](#using-this-template)
 - [Layout](#layout)
